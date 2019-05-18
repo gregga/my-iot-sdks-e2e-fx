@@ -149,7 +149,7 @@ def push_images(tags):
     for image_tag in tags.image_tags:
         print("Pushing {}:{}".format(tags.docker_full_image_name, image_tag))
         for line in api_client.push(
-            tags.docker_full_image_name, image_tag, stream=True, auth_config=auth_config
+            tags.docker_full_image_name, image_tag.lower(), stream=True, auth_config=auth_config
         ):
             print_filtered_docker_line(line)
 
