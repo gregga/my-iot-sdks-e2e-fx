@@ -123,9 +123,12 @@ def build_image(tags):
     ):
         try:
             sys.stdout.write(json.loads(line.decode("utf-8"))["stream"])
-        except KeyError:
-            print_filtered_docker_line(line)
-
+        except:
+            try:
+                print_filtered_docker_line(line)
+            except:
+                out_line = ''.format("{}",line)
+                print(''.join([i if ord(i) < 128 else '#' for i in out_line]))
 
 def tag_images(tags):
     print(print_separator)
