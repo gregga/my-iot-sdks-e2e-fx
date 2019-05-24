@@ -216,7 +216,7 @@ class HortonCreateContainers:
         return t_ret
 
     def progress(self, count, status=''):
-        sys.stdout.write('[%s] %s ...%s\r' % (self.get_tick(count, 1, 4), count, status))
+        sys.stdout.write(' [%s] %s ...%s\r' % (self.get_tick(count, 1, 4), count, status))
         sys.stdout.flush()
 
     def get_random_num_string(self, maxval):

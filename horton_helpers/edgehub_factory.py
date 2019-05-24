@@ -36,7 +36,7 @@ class EdgeHub:
             self._useExistingHub(edge_hub_device_id)
 
     def _createNewHub(self):
-        self.edge_hub_device_id = get_random_device_name()
+        self.edge_hub_device_id = get_random_device_name().lower()
         self.helper.create_device(self.edge_hub_device_id, True)
         self._finishHubSetup()
 

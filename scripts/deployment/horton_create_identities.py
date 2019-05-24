@@ -25,7 +25,7 @@ class HortonCreateIdentities:
         init(autoreset=True)
         deployment_json = self.get_deployment_model_json(save_manifest_file)
         hub_connect_string = self.get_env_connect_string()
-        id_prefix = "horton_{}_{}".format(self.get_random_num_string(1000),self.get_random_num_string(1000))
+        id_prefix = "horton_{}_{}".format(self.get_random_num_string(9999),self.get_random_num_string(9999))
         device_count = 0
         module_count = 0
         other_count = 0
