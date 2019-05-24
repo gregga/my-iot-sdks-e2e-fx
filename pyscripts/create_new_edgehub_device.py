@@ -25,7 +25,7 @@ host = connection_string_to_sas_token(service_connection_string)["host"]
 print("Creating new device on hub {}".format(host))
 
 if "IOTHUB_E2E_EDGEHUB_DEVICE_ID" in os.environ:
-    old_edgehub_device_id = os.environ["IOTHUB_E2E_EDGEHUB_DEVICE_ID"]
+    old_edgehub_device_id = os.environ["IOTHUB_E2E_EDGEHUB_DEVICE_ID"].lower()
     old_edgehub_leaf_device = "{}_leaf_device".format(old_edgehub_device_id)
     helper = Helper(service_connection_string)
     if helper.try_delete_device(old_edgehub_device_id):
