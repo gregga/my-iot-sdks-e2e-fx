@@ -52,33 +52,43 @@ def get_dockerfile_directory(tags):
     return os.path.normpath(os.path.join(script_dir, "../ci-wrappers/" + tags.language))
 
 
-def print_filtered_docker_line(line):
-    try:
-        obj = json.loads(line.decode("utf-8"))
-    except:
-        print(line)
-    else:
-        if "status" in obj:
-            if "id" in obj:
-                if obj["status"] not in [
-                    "Waiting",
-                    "Downloading",
-                    "Verifying Checksum",
-                    "Extracting",
-                    "Preparing",
-                    "Pushing",
-                ]:
-                    print("{}: {}".format(obj["status"], obj["id"]))
-                else:
-                    pass
-            else:
-                print(obj["status"])
-        elif "error" in obj:
-            print ("docker error: {}".format(line))
-            raise Exception(obj["error"])
+def print_filtered_docker_line(lineobj):
+    lineobj = lineobj.splitlines()
+    for line in lineobj:
+        try:
+            linecode = line.strip().decode("utf-8")
+            linecode = linecode[:linecode.rfind("\r\n")] + '}'
+            jline = json.loads(linecode)
+            obj = jline["stream"]
+        except:
+            print(''.join([chr(i) if i < 128 else '\x23' for i in line]))
         else:
-            print(line)
-
+            if "status" in obj:
+                if "id" in obj:
+                    if obj["status"] not in [
+                        "Waiting",
+                        "Downloading",
+                        "Verifying Checksum",
+                        "Extracting",
+                        "Preparing",
+                        "Pushing",
+                    ]:
+                        print("{}: {}".format(obj["status"], obj["id"]))
+                    else:
+                        pass
+                else:
+                    print(obj["status"])
+            elif "error" in obj:
+                print ("docker error: {}".format(line))
+                raise Exception(obj["error"])
+            elif "Step" in obj or "---" in obj:
+                print("{}".format(obj).strip())
+            elif obj == "\n":
+                pass
+            else:
+                lineout = "".format("{}", line)
+                print(''.join([chr(i) if i < 128 else '\x23' for i in lineout]))
+ 
 
 def build_image(tags):
     print(print_separator)
@@ -87,7 +97,12 @@ def build_image(tags):
 
     force_flag = 0
 
-    api_client = docker.APIClient(base_url="unix://var/run/docker.sock")
+    if sys.platform == 'win32':
+        base_url = "tcp://127.0.0.1:2375"
+    else:
+        base_url = "unix://var/run/docker.sock"
+    api_client = docker.APIClient(base_url=base_url)
+
     build_args = {
         "HORTON_REPO": tags.repo,
         "HORTON_COMMIT_NAME": tags.commit_name,
@@ -121,20 +136,19 @@ def build_image(tags):
         cache_from=cache_from,
         dockerfile=dockerfile,
     ):
-        try:
-            sys.stdout.write(json.loads(line.decode("utf-8"))["stream"])
-        except:
-            try:
-                print_filtered_docker_line(line)
-            except:
-                out_line = ''.format("{}",line)
-                print(''.join([i if ord(i) < 128 else '#' for i in out_line]))
+        print_filtered_docker_line(line)
 
 def tag_images(tags):
     print(print_separator)
     print("TAGGING IMAGE")
     print(print_separator)
-    api_client = docker.APIClient(base_url="unix://var/run/docker.sock")
+
+    if sys.platform == 'win32':
+        base_url = "tcp://127.0.0.1:2375"
+    else:
+        base_url = "unix://var/run/docker.sock"
+    api_client = docker.APIClient(base_url=base_url)
+
     print("Adding tags")
     for image_tag in tags.image_tags:
         print("Adding " + image_tag)
@@ -145,13 +159,26 @@ def push_images(tags):
     print(print_separator)
     print("PUSHING IMAGE")
     print(print_separator)
-    api_client = docker.APIClient(base_url="unix://var/run/docker.sock")
+
+    if sys.platform == 'win32':
+        base_url = "tcp://127.0.0.1:2375"
+    else:
+        base_url = "unix://var/run/docker.sock"
+    api_client = docker.APIClient(base_url=base_url)
+
     for image_tag in tags.image_tags:
         print("Pushing {}:{}".format(tags.docker_full_image_name, image_tag))
         for line in api_client.push(
             tags.docker_full_image_name, image_tag.lower(), stream=True, auth_config=auth_config
         ):
-            print_filtered_docker_line(line)
+            try:
+                sys.stdout.write(json.loads(line.decode("utf-8"))["stream"])
+            except:
+                try:
+                    print_filtered_docker_line(line)
+                except:
+                    out_line = ''.format("{}",line)
+                    print(''.join([i if ord(i) < 128 else '#' for i in out_line]))
 
 
 def prefetch_cached_images(tags):
@@ -160,7 +187,13 @@ def prefetch_cached_images(tags):
         print(Fore.YELLOW + "PREFETCHING IMAGE")
         print(print_separator)
         tags.image_tag_to_use_for_cache = None
-        api_client = docker.APIClient(base_url="unix://var/run/docker.sock")
+
+        if sys.platform == 'win32':
+            base_url = "tcp://127.0.0.1:2375"
+        else:
+            base_url = "unix://var/run/docker.sock"
+        api_client = docker.APIClient(base_url=base_url)
+ 
         for image_tag in tags.image_tags:
             print(
                 Fore.YELLOW

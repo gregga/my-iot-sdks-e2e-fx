@@ -16,7 +16,7 @@ import argparse
 ensure_edge_environment_variables()
 
 parser = argparse.ArgumentParser(description="deploy containers for testing")
-parser.add_argument("--all", action="store_true", help="deploy all containers")
+parser.add_argument("--all", action="store_true", help="deploy all containers") 
 for container_name in all_containers:
     parser.add_argument(
         "--" + container_name,

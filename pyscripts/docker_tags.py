@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project root for full license tagsrmation.
 import os
+import sys
 import docker
 import github
 from image_variants import get_default_variant
@@ -15,7 +16,10 @@ class DockerTags:
         if running_on_azure_pipelines():
             self.docker_repo = os.environ.get("IOTHUB_E2E_REPO_ADDRESS")
         else:
-            self.docker_repo = "localhost:5000"
+            if sys.platform == 'win32':
+                self.docker_repo = "localhost:2375"
+            else:
+                self.docker_repo = "localhost:5000"
         self.image_tags = []
         self.image_tag_to_use_for_cache = None
 
