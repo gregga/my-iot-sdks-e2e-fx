@@ -57,8 +57,7 @@ def print_filtered_docker_line(lineobj):
     for line in lineobj:
         try:
             linecode = line.strip().decode("utf-8")
-            linecode = linecode[:linecode.rfind("\r\n")] + '}'
-            jline = json.loads(linecode)
+            jline = json.loads(linecode[:linecode.rfind("\r\n")] + '}')
             obj = jline["stream"]
         except:
             print(''.join([chr(i) if i < 128 else '\x23' for i in line]))
