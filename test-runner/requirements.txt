@@ -1,4 +1,4 @@
-setuptools==40.4.3
+setuptools==65.5.1
 certifi==2018.8.24
 six==1.11.0
 python_dateutil==2.7.3
